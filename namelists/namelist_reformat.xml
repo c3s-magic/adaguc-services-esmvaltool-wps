@@ -1,0 +1,59 @@
+<namelist>
+	<include href="./config_private.xml"/>
+<namelist_summary>
+###############################################################################
+namelist_reformat.xml
+
+Description
+Test namelist for the reformat routines
+
+Author
+Mattia Righi (DLR, Germany - mattia.righi@dlr.de)
+
+Edited by Niels Drost for Magic MVP. For testing purposes only.
+
+Project
+DLR ESMVal
+
+Reference
+
+This namelist is part of the ESMValTool
+###############################################################################
+</namelist_summary>
+
+<GLOBAL>
+  <write_plots type="boolean">            True          </write_plots>
+  <write_netcdf type="boolean">           True          </write_netcdf>
+  <force_processing type="boolean">       True          </force_processing>
+  <wrk_dir type="path">                   {{ work_dir }}   </wrk_dir>
+  <plot_dir type="path">                  {{ work_dir }}   </plot_dir>
+  <climo_dir type="path">                 {{ work_dir }}  </climo_dir>
+  <write_plot_vars type="boolean">        True          </write_plot_vars>
+  <max_data_filesize type="integer">      100           </max_data_filesize>
+  <max_data_blocksize type="integer">     500           </max_data_blocksize>
+  <verbosity  type="integer">              1            </verbosity>
+  <exit_on_warning  type="boolean">       False         </exit_on_warning>
+  <output_file_type>                      png           </output_file_type>
+
+</GLOBAL>
+
+<MODELS>
+
+	{% for model in models %}
+		<model> {{ model }} </model>
+	{% endfor %}
+</MODELS>
+
+<DIAGNOSTICS>
+    <diag>
+        <description> Time series plot                        </description>
+        <variable_def_dir>                ./variable_defs/    </variable_def_dir>
+				<variable>    {{ variable }}               </variable>
+        <field_type>                        T2Ms              </field_type>
+        <diag_script_cfg_dir>             ./nml/cfg_generic/  </diag_script_cfg_dir>
+
+        <diag_script cfg="cfg_generic_tsline.ncl">      tsline.ncl       </diag_script>
+    </diag>
+</DIAGNOSTICS>
+
+</namelist>
