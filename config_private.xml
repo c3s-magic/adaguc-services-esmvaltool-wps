@@ -23,17 +23,17 @@
 		</usrpath>
 
 		<usrpath category="simulation" type="input" id="MODELPATH">
-			<path>/data/in/modeldata</path>
+			<path>/data-esmvaltool/models/</path>
 			<description>root directory of model data</description>
 		</usrpath>
 
 		<usrpath category="observation" type="input" id="OBSPATH">
-			<path>/data/in/obsdata/</path>
+			<path>/data-esmvaltool/obs/</path>
 			<description>root directory of observational data</description>
 		</usrpath>
 
 		<usrpath category="observation" type="input" id="RAWOBSPATH">
-			<path>/data/in/rawobsdata/</path>
+			<path>/data-esmvaltool/rawobs/</path>
 			<description>root directory of raw observational data (for reformat_obs scripts)</description>
 		</usrpath>
 

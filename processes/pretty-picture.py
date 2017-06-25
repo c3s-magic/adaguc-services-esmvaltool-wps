@@ -21,22 +21,22 @@ class Process(WPSProcess):
                              abstract="Some picture.",
                              grassLocation =False)
 
+         #Input (c4i fails if no inputs are present)
 	 self.tag = self.addLiteralInput(identifier="tag",title = "Specify a custom title for this process",type="String",default="unspecified")
 
-            #No need for inputs since Execute will start the process
 	 self.picture=self.addComplexOutput(identifier="picture",
                     title="Raster out",
                     formats=[{"mimeType":"image/png"}])
 
-#	 self.morepicture=self.addLiteralOutput(identifier="morepicture",
-#                    title="Another Raster out",
-#                    type="String")
-
+	 self.picture2=self.addComplexOutput(identifier="picture2",
+                    title="Raster out",
+                    formats=[{"mimeType":"image/png"}])
 
      def execute(self):
          outfile = "/miniconda/lib/python2.7/site-packages/matplotlib/backends/web_backend/jquery/css/themes/base/images/ui-icons_228ef1_256x240.png"
 #	 self.picture.format = {'mimeType':"image/png"}
          self.picture.setValue(outfile)
+         self.picture2.setValue(outfile)
 
 #	 dir(self)
 #	 self.processTitle.setValue(self.tag.getValue())

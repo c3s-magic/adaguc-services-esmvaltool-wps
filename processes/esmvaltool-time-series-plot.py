@@ -28,43 +28,71 @@ class Process(WPSProcess):
         WPSProcess.__init__(self,
                             identifier="esmvaltool-time-series-plot",  # the same as the file name
                             version="1.0",
-                            title="Create a time series plot for the given data files",
+                            title="Create a time series plot for the given models",
                             storeSupported="True",
                             statusSupported="True",
                             abstract="Calls ESMValTool to create a time series plot.",
                             grassLocation=False)
 
-        self.input1 = self.addLiteralInput(identifier="netcdf1",
-                                               title="Model file",
-                                               type="String",
-                                               abstract="application/netcdf",
-                                               # default="http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc",
-                                               minOccurs=0,
-                                               maxOccurs=1)
+	model_names = ['None', 'ACCESS1-0', 'bcc-csm1-1', 'EC-EARTH', 'MIROC5']
 
-        self.input2 = self.addLiteralInput(identifier="netcdf2",
-                                               title="Model file",
+        self.model1 = self.addLiteralInput(identifier="model1",
+                                               title="Model 1",
                                                type="String",
-                                               abstract="application/netcdf",
-                                               # default="http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc",
-                                               minOccurs=0,
-                                               maxOccurs=1)
+                                               abstract="Model name",
+                                               minOccurs=1,
+                                               maxOccurs=1,
+                                               default='ACCESS1-0',
+                                               allowedValues=model_names)
+        self.model2 = self.addLiteralInput(identifier="model2",
+                                               title="Model 2",
+                                               type="String",
+                                               abstract="Model name",
+                                               minOccurs=1,
+                                               maxOccurs=1,
+                                               allowedValues=model_names)
+        self.model3 = self.addLiteralInput(identifier="model3",
+                                               title="Model 3",
+                                               type="String",
+                                               abstract="Model name",
+                                               minOccurs=1,
+                                               maxOccurs=1,
+                                               allowedValues=model_names)
+        self.model4 = self.addLiteralInput(identifier="model4",
+                                               title="Model 4",
+                                               type="String",
+                                               abstract="Model name",
+                                               minOccurs=1,
+                                               maxOccurs=1,
+                                               allowedValues=model_names)
 
-        self.input3 = self.addLiteralInput(identifier="netcdf3",
-                                               title="Model file",
-                                               type="String",
-                                               abstract="application/netcdf",
-                                               # default="http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc",
-                                               minOccurs=0,
-                                               maxOccurs=1)
+	self.variable = self.addLiteralInput(identifier="variable",
+                                              title="Variable",
+                                              type="String",
+                                              default="tas",
+                                              minOccurs=1,
+                                              maxOccurs=1)
 
-        self.input4 = self.addLiteralInput(identifier="netcdf4",
-                                               title="Model file",
-                                               type="String",
-                                               abstract="application/netcdf",
-                                               # default="http://opendap.knmi.nl/knmi/thredds/dodsC/CLIPC/cerfacs/vDTR/MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1/vDTR_MON_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_SMHI-RCA4_v1_EUR-11_2006-2100.nc",
-                                               minOccurs=0,
-                                               maxOccurs=1)
+	self.period = self.addLiteralInput(identifier="period",
+                                              title="Period of the data",
+                                              type="String",
+                                              default="Amon",
+                                              minOccurs=1,
+                                              maxOccurs=1)
+
+	self.experiment = self.addLiteralInput(identifier="experiment",
+                                              title="Experiment of the data",
+                                              type="String",
+                                              default="historical",
+                                              minOccurs=1,
+                                              maxOccurs=1)
+
+	self.ensemble_member = self.addLiteralInput(identifier="ensemble_member",
+                                              title="Ensemble member of the data",
+                                              type="String",
+                                              default="r1i1p1",
+                                              minOccurs=1,
+                                              maxOccurs=1)
 
 
         self.startYear = self.addLiteralInput(identifier="startYear",
@@ -85,57 +113,36 @@ class Process(WPSProcess):
                                                 title="opendapURL",
                                                 type="String", )
 
-        self.plot = self.addLiteralOutput(identifier="plot",
-                    title="Raster out",
-                    type="String",
-                    asReference=False
-                   )
-
-    def copyNetCDF(self, source, destination, description, skipVariable=None):
-        nc_fid = netCDF4.Dataset(source, 'r')
-        w_nc_fid = netCDF4.Dataset(destination, 'w', format='NETCDF4')
-
-        w_nc_fid.description = description
-
-        for var_name, dimension in nc_fid.dimensions.iteritems():
-            w_nc_fid.createDimension(var_name, len(dimension) if not dimension.isunlimited() else None)
-
-        for var_name, ncvar in nc_fid.variables.iteritems():
-            if ((skipVariable != None and skipVariable != var_name) or skipVariable == None):
-                outVar = w_nc_fid.createVariable(var_name, ncvar.datatype, ncvar.dimensions)
-
-                ad = dict((k, ncvar.getncattr(k)) for k in ncvar.ncattrs())
-
-                outVar.setncatts(ad)
-                try:
-                    outVar[:] = ncvar[:]
-                except:
-                    outVar = ncvar
-                    pass
-
-        global_vars = dict((k, nc_fid.getncattr(k)) for k in nc_fid.ncattrs())
-
-        for k in sorted(global_vars.keys()):
-            w_nc_fid.setncattr(k, global_vars[k])
-
-        nc_fid.close()
-        w_nc_fid.close()
+	self.plot = self.addComplexOutput(identifier = "plot",
+		     title = "TimeseriesPlot",
+		     formats = [
+			 {"mimeType":"image/png"}
+		     ])
 
     def execute(self):
         self.status.set("starting", 0)
 
-
         #print some debugging info
 
-        inputs = [self.input1.getValue(), self.input2.getValue(), self.input3.getValue(), self.input4.getValue()]
-        start_year = self.startYear.getValue()
+	models = []
+
+	model_values = [self.model1.getValue(), self.model2.getValue(), self.model3.getValue(), self.model4.getValue()]
+
+	for value in model_values:
+	    if value != 'None':
+	        models.append(value)
+
+	variable = self.variable.getValue()
+	period = self.period.getValue()
+	experiment = self.experiment.getValue()
+	start_year = self.startYear.getValue()
         end_year = self.endYear.getValue()
+ 	ensemble_member = self.ensemble_member.getValue()
 
-        logging.debug("inputs %s" % inputs)
-        logging.debug("Start year is %s" % self.startYear.getValue())
-        logging.debug("End year is %s" % self.endYear.getValue())
+        logging.debug("models %s, variable %s, period %s, experiment %s, ensemble_member %s, start_year %s, end_year %s" % (models, variable, period, experiment, ensemble_member, start_year, end_year))
 
-        # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
+	# This does not work atm.
+        # This allows the NetCDF library to find the users credentials (X509 cert)
         # Set current working directory to user HOME dir
         os.chdir(os.environ['HOME'])
 
@@ -156,10 +163,7 @@ class Process(WPSProcess):
         if not os.path.exists(output_folder_path):
             os.makedirs(output_folder_path)
 
-
         #copy input files to scratch (in correct folders for esmvaltool)
-
-        inputs = [self.input1.getValue(), self.input2.getValue(), self.input3.getValue(), self.input4.getValue()]
 
         #next, copy input netcdf to a location esmvaltool expects
 
@@ -170,52 +174,13 @@ class Process(WPSProcess):
         # ETHZ_CMIP5/historical/Amon/ta/bcc-csm1-1/r1i1p1/ta_Amon_bcc-csm1-1_historical_r1i1p1_200001-200212.nc
 
 
+        	#description = <model> SOME DESCRIPTION FIELDS HERE </model>
+
         model_descriptions = []
-        variable = None
+	for model in models:
+	    model_descriptions.append('CMIP5_ETHZ %s %s %s %s %s %s @{MODELPATH}/ETHZ_CMIP5/' % ( model, period, experiment, ensemble_member, start_year, end_year))
 
-        self.status.set("downloading input from esgf", 0)
-        for input_url in inputs:
-
-            if input_url: # if input_url is not an empty string or None
-                parsed_url = urlparse.urlparse(input_url)
-                filename = os.path.basename(parsed_url.path)
-
-
-                logging.debug("url %s has path %s and filename %s" % (input_url, parsed_url.path, filename))
-
-
-                parts = filename.split('_')
-
-                elements = dict(variable=parts[0], period=parts[1], model=parts[2], experiment = parts[3], ensemble_member=parts[4])
-
-                self.status.set("downloading input for %s from esgf" % elements['model'], 10 + self.status.percentCompleted)
-
-                logging.debug("elements %s" % elements)
-
-                input_file_dir = "/data/in/modeldata/ETHZ_CMIP5/%s/%s/%s/%s/%s" % ( elements['experiment'], elements['period'], elements['variable'], elements['model'], elements['ensemble_member'])
-                input_file_path =input_file_dir + "/" + filename
-
-                if not os.path.exists(input_file_dir):
-                    os.makedirs(input_file_dir)
-
-                logging.debug("input_file_path %s" % input_file_path)
-
-                if os.path.exists(input_file_path):
-                    logging.debug("deleting input file %s" % input_file_path)
-                    os.remove(input_file_path)
-
-                self.copyNetCDF(input_url,input_file_path, "copied")
-
-                #description = <model> SOME DESCRIPTION FIELDS HERE </model>
-                model_descriptions.append('CMIP5_ETHZ %s %s %s %s %s %s @{MODELPATH}/ETHZ_CMIP5/' % (elements['model'], elements['period'], elements['experiment'], elements['ensemble_member'], start_year, end_year))
-
-                if variable is None:
-                    variable = elements['variable']
-                elif variable !=  elements['variable']:
-                    raise Exception("All files need to be of the same variable")
-
-        self.status.set("setting up namelist for esmvaltool", 50)
-
+        self.status.set("setting up namelist for esmvaltool", 10)
 
         logging.debug("model descriptions now %s" % model_descriptions)
         logging.debug("variable %s" % variable)
@@ -240,7 +205,7 @@ class Process(WPSProcess):
 
         #run esmvaltool command
 
-        self.status.set("running esmvaltool", 60)
+        self.status.set("running esmvaltool", 20)
 
         os.chdir('/src/ESMValTool')
 
@@ -254,11 +219,10 @@ class Process(WPSProcess):
 
         logging.debug("output image path is %s" % output_image)
 
-        rel_output_image = os.path.relpath(output_image, output_folder_path)
+#        rel_output_image = os.path.relpath(output_image, output_folder_path)
+#        plot_url = output_folder_url + "/" + rel_output_image
 
-        plot_url = output_folder_url + "/" + rel_output_image
-
-        self.plot.setValue(plot_url)
+        self.plot.setValue(output_image)
 
         #KNMI WPS Specific Set output
 
