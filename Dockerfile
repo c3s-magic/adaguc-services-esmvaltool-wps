@@ -15,10 +15,16 @@ WORKDIR /src/
 RUN conda env update -f environment.yml
 
 # install esmvaltool
-#RUN curl -L -O https://github.com/ESMValGroup/ESMValTool/archive/docker.zip
-RUN curl -L -O https://github.com/c3s-magic/ESMValTool/archive/master.zip
-RUN unzip master.zip
-RUN mv /src/ESMValTool-master /src/ESMValTool/
+#master branch
+#RUN curl -L -O https://github.com/c3s-magic/ESMValTool/archive/master.zip
+#RUN unzip master.zip
+#RUN mv /src/ESMValTool-master /src/ESMValTool/
+
+#mult-instance-quickfix branch
+RUN curl -L -O https://github.com/c3s-magic/ESMValTool/archive/multi-instance-quickfix.zip
+RUN unzip multi-instance-quickfix.zip
+RUN mv /src/ESMValTool-multi-instance-quickfix /src/ESMValTool/
+
 WORKDIR /src/ESMValTool
 COPY config_private.xml /src/ESMValTool/config_private.xml
 
