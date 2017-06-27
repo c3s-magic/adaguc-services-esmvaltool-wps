@@ -1,0 +1,68 @@
+<namelist>
+<include href="./config_private.xml"/>
+<namelist_summary>
+###############################################################################
+namelist_demo.xml (demo namelist)
+
+Description
+..
+
+Authors
+..
+
+Project
+ESA CMUG
+
+Reference
+..
+
+This namelist is part of the ESMValTool
+###############################################################################
+</namelist_summary>
+
+<GLOBAL>
+    <write_plots type="boolean">              True         </write_plots>
+    <write_netcdf type="boolean">             True         </write_netcdf>
+    <force_processing type="boolean">        False         </force_processing>
+    <wrk_dir type="path">                    {{ work_dir }}   </wrk_dir>
+    <plot_dir type="path">                   {{ work_dir }}   </plot_dir>
+    <climo_dir type="path">                  {{ work_dir }}  </climo_dir>
+    <write_plot_vars type="boolean">          True         </write_plot_vars>
+    <max_data_filesize type="integer">         100         </max_data_filesize>
+    <max_data_blocksize type="integer">        500         </max_data_blocksize>
+    <verbosity  type="integer">                  1         </verbosity>
+    <exit_on_warning  type="boolean">        False         </exit_on_warning>
+    <output_file_type>                         png         </output_file_type>
+    <force_calc type="boolean">              False         </force_calc>
+    <force_gradecalc type="boolean">         False         </force_gradecalc>
+    <force_taylorcalc type="boolean">        False         </force_taylorcalc>
+</GLOBAL>
+
+<MODELS>
+
+<!-- MODELS AND OBSERVATIONS ARE SPECIFIC TO EACH VARIABLE AND DEFINED IN THE DIAG SECTIONS BELOW -->
+
+</MODELS>
+
+<DIAGNOSTICS>
+
+<!--
+    Figure 2 (Taylor diagrams)
+    ==========================
+-->
+    <diag>
+    <description> Taylor diagram for 2m temperature (creates common legend) </description>
+    <variable_def_dir>    ./variable_defs/       </variable_def_dir>
+    <variable ref_model="ERA"> tas               </variable>
+    <field_type>          T2Ms                   </field_type>
+    <diag_script_cfg_dir> ./nml/cfg_lauer17rse/  </diag_script_cfg_dir>
+    <diag_script cfg="cfg_clouds_taylor_esa.ncl"> clouds_taylor.ncl </diag_script>
+    {% for model in models %}
+        <model> {{ model }} </model>
+    {% endfor %}
+    <model>          OBS NCEP                reanaly      1             2003 2005  @{OBSPATH}/Tier2/NCEP            </model>
+    <model id="ERA"> OBS ERA-Interim         reanaly      1             2003 2005  @{OBSPATH}/Tier3/ERA-Interim     </model>
+    </diag>
+
+</DIAGNOSTICS>
+</namelist>

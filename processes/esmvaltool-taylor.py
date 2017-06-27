@@ -26,12 +26,12 @@ class Process(WPSProcess):
     def __init__(self):
         # init process
         WPSProcess.__init__(self,
-                            identifier="esmvaltool-portrait",  # the same as the file name
+                            identifier="esmvaltool-taylor",  # the same as the file name
                             version="1.0",
-                            title="Portrait Grading Diagram",
+                            title="Clouds Taylor Diagram",
                             storeSupported="True",
                             statusSupported="True",
-                            abstract="Create a portrait grading diagram using ESMValTool (takes about 10 minutes).",
+                            abstract="Create a Taylor diagram using ESMValTool (takes about 30 seconds).",
                             grassLocation=False)
 
 	model_names = ['None', 'ACCESS1-0', 'ACCESS1-3', 'bcc-csm1-1', 'EC-EARTH', 'MIROC5']
@@ -190,7 +190,7 @@ class Process(WPSProcess):
         environment = Environment(loader=FileSystemLoader('/namelists'))
                                   #autoescape=select_autoescape(['html', 'xml']))
 
-        template = environment.get_template('namelist_portrait.xml')
+        template = environment.get_template('namelist_taylor.xml')
 
         generated_namelist = template.render(models=model_descriptions, variable=variable, work_dir=output_folder_path)
 
@@ -216,7 +216,7 @@ class Process(WPSProcess):
 
         self.status.set("processing output", 90)
 
-        output_image = glob.glob(output_folder_path + "/perfmetrics_grading/*.png").pop()
+        output_image = glob.glob(output_folder_path + "/clouds_taylor/*.png").pop()
 
         logging.debug("output image path is %s" % output_image)
 
@@ -227,7 +227,7 @@ class Process(WPSProcess):
 
         #KNMI WPS Specific Set output
 
-        output_nc = glob.glob(output_folder_path + "/perfmetrics_grading/*.nc").pop()
+        output_nc = glob.glob(output_folder_path + "/clouds_taylor/OBS*.nc").pop()
 
         rel_output_nc = os.path.relpath(output_nc, output_folder_path)
 

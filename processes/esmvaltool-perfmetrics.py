@@ -28,10 +28,10 @@ class Process(WPSProcess):
         WPSProcess.__init__(self,
                             identifier="esmvaltool-perfmetrics",  # the same as the file name
                             version="1.0",
-                            title="Create a series of plots for the given models",
+                            title="Model comparison report",
                             storeSupported="True",
                             statusSupported="True",
-                            abstract="Calls ESMValTool to create a series of plots.",
+                            abstract="Creates a report comparing models using ESMValTool (takes about 30 minutes).",
                             grassLocation=False)
 
 	model_names = ['None', 'ACCESS1-0', 'ACCESS1-3', 'bcc-csm1-1', 'EC-EARTH', 'MIROC5']

@@ -1,0 +1,190 @@
+<namelist>
+<include href="./config_private.xml"/>
+<namelist_summary>
+###############################################################################
+namelist_demo.xml (demo namelist)
+
+Description
+..
+
+Authors
+..
+
+Project
+ESA CMUG
+
+Reference
+..
+
+This namelist is part of the ESMValTool
+###############################################################################
+</namelist_summary>
+
+<GLOBAL>
+    <write_plots type="boolean">              True         </write_plots>
+    <write_netcdf type="boolean">             True         </write_netcdf>
+    <force_processing type="boolean">        False         </force_processing>
+    <wrk_dir type="path">                    {{ work_dir }}   </wrk_dir>
+    <plot_dir type="path">                   {{ work_dir }}   </plot_dir>
+    <climo_dir type="path">                  {{ work_dir }}  </climo_dir>
+    <write_plot_vars type="boolean">          True         </write_plot_vars>
+    <max_data_filesize type="integer">         100         </max_data_filesize>
+    <max_data_blocksize type="integer">        500         </max_data_blocksize>
+    <verbosity  type="integer">                  1         </verbosity>
+    <exit_on_warning  type="boolean">        False         </exit_on_warning>
+    <output_file_type>                         png         </output_file_type>
+    <force_calc type="boolean">              False         </force_calc>
+    <force_gradecalc type="boolean">         False         </force_gradecalc>
+    <force_taylorcalc type="boolean">        False         </force_taylorcalc>
+</GLOBAL>
+
+<MODELS>
+
+<!-- MODELS AND OBSERVATIONS ARE SPECIFIC TO EACH VARIABLE AND DEFINED IN THE DIAG SECTIONS BELOW -->
+
+</MODELS>
+
+<DIAGNOSTICS>
+
+<!--
+    Figure 1 (portrait diagram)
+    ===========================
+-->
+
+    <diag>
+    <description> TEMPERATURE: grading precalculations </description>
+    <variable_def_dir>     ./variable_defs/            </variable_def_dir>
+    <variable ref_model="ERA-Interim,NCEP">  ta        </variable>
+    <field_type>           T3M                         </field_type>
+    <diag_script_cfg_dir>  ./nml/cfg_lauer17rse/       </diag_script_cfg_dir>
+
+    {% for model in models %}
+        <model> {{ model }} </model>
+    {% endfor %}
+
+    <model>  OBS         ERA-Interim         reanaly      1             2003 2005  @{OBSPATH}/Tier3/ERA-Interim     </model>
+    <model>  OBS         NCEP                reanaly      1             2003 2005  @{OBSPATH}/Tier2/NCEP            </model>
+    <diag_script cfg="cfg_perfmetrics_grading_RMSD_850_glob.ncl">       perfmetrics_main.ncl          </diag_script>
+    <diag_script cfg="cfg_perfmetrics_grading_RMSD_850_glob.ncl">       perfmetrics_grading.ncl       </diag_script>
+    </diag>
+
+    <diag>
+    <description> EASTWARD WIND: grading precalculations </description>
+    <variable_def_dir>     ./variable_defs/              </variable_def_dir>
+    <variable ref_model="ERA-Interim,NCEP">  ua          </variable>
+    <field_type>           T3M                           </field_type>
+    <diag_script_cfg_dir>  ./nml/cfg_lauer17rse/         </diag_script_cfg_dir>
+    {% for model in models %}
+        <model> {{ model }} </model>
+    {% endfor %}
+    <model>  OBS         ERA-Interim         reanaly      1             2003 2005  @{OBSPATH}/Tier3/ERA-Interim     </model>
+    <model>  OBS         NCEP                reanaly      1             2003 2005  @{OBSPATH}/Tier2/NCEP            </model>
+    <diag_script cfg="cfg_perfmetrics_grading_RMSD_850_glob.ncl">       perfmetrics_main.ncl          </diag_script>
+    <diag_script cfg="cfg_perfmetrics_grading_RMSD_850_glob.ncl">       perfmetrics_grading.ncl       </diag_script>
+    </diag>
+
+    <diag>
+    <description> COLLECT AND PLOT PREVIOUSLY CALCULATED GRADINGS (Portrait diagram) </description>
+    <variable_def_dir>     ./variable_defs/             </variable_def_dir>
+    <variable>             ta                           </variable>
+    <field_type>           T3M                          </field_type>
+    <diag_script_cfg_dir>  ./nml/cfg_lauer17rse/        </diag_script_cfg_dir>
+    <model>CMIP5_ETHZ  ACCESS1-0 Amon  historical  r1i1p1  2003  2005  CMIP5_template </model>
+    <diag_script cfg="cfg_perfmetrics_grading_collect.ncl">    perfmetrics_grading_collect.ncl         </diag_script>
+    </diag>
+
+<!--
+    Figure 2 (Taylor diagrams)
+    ==========================
+-->
+    <diag>
+    <description> Taylor diagram for 2m temperature (creates common legend) </description>
+    <variable_def_dir>    ./variable_defs/       </variable_def_dir>
+    <variable ref_model="ERA"> tas               </variable>
+    <field_type>          T2Ms                   </field_type>
+    <diag_script_cfg_dir> ./nml/cfg_lauer17rse/  </diag_script_cfg_dir>
+    <diag_script cfg="cfg_clouds_taylor_esa.ncl"> clouds_taylor.ncl </diag_script>
+    {% for model in models %}
+        <model> {{ model }} </model>
+    {% endfor %}
+    <model>          OBS NCEP                reanaly      1             2003 2005  @{OBSPATH}/Tier2/NCEP            </model>
+    <model id="ERA"> OBS ERA-Interim         reanaly      1             2003 2005  @{OBSPATH}/Tier3/ERA-Interim     </model>
+    </diag>
+<!--
+    Figure 7 (annual mean cloud cover maps + zonal means)
+    =====================================================
+-->
+
+    <diag>
+    <description> Cloud diagnostics </description>
+    <variable_def_dir>    ./variable_defs/  </variable_def_dir>
+    <variable>            clt               </variable>
+    <field_type>          T2Ms              </field_type>
+    <diag_script_cfg_dir> ./nml/cfg_lauer17rse/ </diag_script_cfg_dir>
+    <diag_script cfg="cfg_clouds.ncl"> clouds.ncl </diag_script>
+    <model>  OBS         ESACCI-CLOUD        sat    AVHRR-fv2.0         2003 2005  @{OBSPATH}/Tier2/ESACCI-CLOUD </model>
+    </diag>
+
+    <diag>
+    <description> Cloud diagnostics </description>
+    <variable_def_dir>    ./variable_defs/  </variable_def_dir>
+    <variable>            cltStderr         </variable>
+    <field_type>          T2Ms              </field_type>
+    <diag_script_cfg_dir> ./nml/cfg_lauer17rse/ </diag_script_cfg_dir>
+    <diag_script cfg="cfg_clouds_err.ncl"> clouds.ncl </diag_script>
+    <model>  OBS         ESACCI-CLOUD        sat    AVHRR-fv2.0         2003 2005  @{OBSPATH}/Tier2/ESACCI-CLOUD </model>
+    </diag>
+
+    <diag>
+    <description> Cloud diagnostics </description>
+    <variable_def_dir>    ./variable_defs/      </variable_def_dir>
+    <variable>            clt                   </variable>
+    <variable only="ESA"> cltStderr             </variable>
+    <field_type>          T2Ms                  </field_type>
+    <diag_script_cfg_dir> ./nml/cfg_lauer17rse/ </diag_script_cfg_dir>
+    <diag_script cfg="cfg_clouds_ipcc.ncl"> clouds_ipcc.ncl </diag_script>
+    {% for model in models %}
+        <model> {{ model }} </model>
+    {% endfor %}
+    <model>  OBS         MODIS               sat    L3-C6               2003 2014  @{OBSPATH}/Tier2/MODIS-L3-C6  </model>
+    <model id="ESA">  OBS         ESACCI-CLOUD        sat    AVHRR-fv2.0         2003 2005  @{OBSPATH}/Tier2/ESACCI-CLOUD </model>
+    </diag>
+
+<!--
+    Figure 8 (cloud cover interannual variability maps)
+    ===================================================
+-->
+
+    <diag>
+    <description> clt interannual variability    </description>
+    <variable_def_dir>    ./variable_defs/       </variable_def_dir>
+    <variable>            clt                    </variable>
+    <field_type>          T2Ms                   </field_type>
+    <diag_script_cfg_dir> ./nml/cfg_lauer17rse/  </diag_script_cfg_dir>
+    <diag_script cfg="cfg_clouds_interannual_esa.ncl"> clouds_interannual.ncl </diag_script>
+    {% for model in models %}
+        <model> {{ model }} </model>
+    {% endfor %}
+    <model>  OBS         MODIS               sat    L3-C6               2003 2005  @{OBSPATH}/Tier2/MODIS-L3-C6  </model>
+    </diag>
+<!--
+    Figure 16 (ozone time series)
+    =============================
+-->
+
+   <diag>
+   <description> total column ozone time series </description>
+   <variable_def_dir>          ./variable_defs/ </variable_def_dir>
+   <variable>                    toz            </variable>
+   <field_type>                  T2Ms           </field_type>
+   <diag_script_cfg_dir> ./nml/cfg_lauer17rse/  </diag_script_cfg_dir>
+   <diag_script cfg="cfg_eyring13jgr_fig02.ncl"> eyring13jgr_fig02.ncl </diag_script>
+    {% for model in models %}
+        <model> {{ model }} </model>
+    {% endfor %}
+   <model> OBS ESACCI-OZONE               sat        L3     2003 2005 @{OBSPATH}/Tier2/ESACCI-OZONE/ </model>
+   <model> OBS NIWA                       reanaly    1      2003 2005 @{OBSPATH}/Tier3/NIWA/ </model>
+   </diag>
+
+</DIAGNOSTICS>
+</namelist>

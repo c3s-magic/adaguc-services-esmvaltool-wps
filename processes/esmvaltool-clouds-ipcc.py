@@ -26,12 +26,12 @@ class Process(WPSProcess):
     def __init__(self):
         # init process
         WPSProcess.__init__(self,
-                            identifier="esmvaltool-portrait",  # the same as the file name
+                            identifier="esmvaltool-clouds-ipcc",  # the same as the file name
                             version="1.0",
-                            title="Portrait Grading Diagram",
+                            title="Clouds IPCC Diagram",
                             storeSupported="True",
                             statusSupported="True",
-                            abstract="Create a portrait grading diagram using ESMValTool (takes about 10 minutes).",
+                            abstract="Create a Clouds IPCC diagram using ESMValTool (takes about 30 seconds).",
                             grassLocation=False)
 
 	model_names = ['None', 'ACCESS1-0', 'ACCESS1-3', 'bcc-csm1-1', 'EC-EARTH', 'MIROC5']
@@ -67,13 +67,6 @@ class Process(WPSProcess):
                                                maxOccurs=1,
                                                allowedValues=model_names)
 
-	self.variable = self.addLiteralInput(identifier="variable",
-                                              title="Variable",
-                                              type="String",
-                                              default="tas",
-                                              minOccurs=1,
-                                              maxOccurs=1)
-
 	self.period = self.addLiteralInput(identifier="period",
                                               title="Period of the data",
                                               type="String",
@@ -95,7 +88,6 @@ class Process(WPSProcess):
                                               minOccurs=1,
                                               maxOccurs=1)
 
-
         self.startYear = self.addLiteralInput(identifier="startYear",
                                               title="First year data used in plot",
                                               type="Integer",
@@ -110,15 +102,14 @@ class Process(WPSProcess):
                                             minOccurs=1,
                                             maxOccurs=1)
 
-        self.opendapURL = self.addLiteralOutput(identifier="opendapURL",
-                                                title="opendapURL",
-                                                type="String", )
+        self.plots = []
+        for i in range (0,4):
+                self.plots.append(self.addComplexOutput(identifier = "plot%d" % i,
+                     title = "Plot",
+                     formats = [
+                         {"mimeType":"image/png"}
+                     ]))
 
-	self.plot = self.addComplexOutput(identifier = "plot",
-		     title = "TimeseriesPlot",
-		     formats = [
-			 {"mimeType":"image/png"}
-		     ])
 
     def execute(self):
         self.status.set("starting", 0)
@@ -133,14 +124,13 @@ class Process(WPSProcess):
 	    if value != 'None':
 	        models.append(value)
 
-	variable = self.variable.getValue()
 	period = self.period.getValue()
 	experiment = self.experiment.getValue()
 	start_year = self.startYear.getValue()
         end_year = self.endYear.getValue()
  	ensemble_member = self.ensemble_member.getValue()
 
-        logging.debug("models %s, variable %s, period %s, experiment %s, ensemble_member %s, start_year %s, end_year %s" % (models, variable, period, experiment, ensemble_member, start_year, end_year))
+        logging.debug("models %s, period %s, experiment %s, ensemble_member %s, start_year %s, end_year %s" % (models, period, experiment, ensemble_member, start_year, end_year))
 
 	# This does not work atm.
         # This allows the NetCDF library to find the users credentials (X509 cert)
@@ -184,15 +174,14 @@ class Process(WPSProcess):
         self.status.set("setting up namelist for esmvaltool", 10)
 
         logging.debug("model descriptions now %s" % model_descriptions)
-        logging.debug("variable %s" % variable)
 
         #create esmvaltool config (using template)
         environment = Environment(loader=FileSystemLoader('/namelists'))
                                   #autoescape=select_autoescape(['html', 'xml']))
 
-        template = environment.get_template('namelist_portrait.xml')
+        template = environment.get_template('namelist_clouds_ipcc.xml')
 
-        generated_namelist = template.render(models=model_descriptions, variable=variable, work_dir=output_folder_path)
+        generated_namelist = template.render(models=model_descriptions, work_dir=output_folder_path)
 
         logging.debug("template output = %s" % generated_namelist)
 
@@ -216,22 +205,19 @@ class Process(WPSProcess):
 
         self.status.set("processing output", 90)
 
-        output_image = glob.glob(output_folder_path + "/perfmetrics_grading/*.png").pop()
+	output_images = sorted(glob.glob(output_folder_path + "/*/*.png"))
 
-        logging.debug("output image path is %s" % output_image)
+        for i in range(0, len(output_images)):
+
+                image = output_images[i]
+
+                logging.debug("output image path is %s" % image)
 
 #        rel_output_image = os.path.relpath(output_image, output_folder_path)
 #        plot_url = output_folder_url + "/" + rel_output_image
 
-        self.plot.setValue(output_image)
+                self.plots[i].setValue(image)
 
-        #KNMI WPS Specific Set output
 
-        output_nc = glob.glob(output_folder_path + "/perfmetrics_grading/*.nc").pop()
 
-        rel_output_nc = os.path.relpath(output_nc, output_folder_path)
-
-        url = output_folder_url + "/" + rel_output_nc
-
-        self.opendapURL.setValue(url);
         self.status.set("ready", 100);

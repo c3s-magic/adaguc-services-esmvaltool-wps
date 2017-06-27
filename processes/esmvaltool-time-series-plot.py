@@ -28,13 +28,13 @@ class Process(WPSProcess):
         WPSProcess.__init__(self,
                             identifier="esmvaltool-time-series-plot",  # the same as the file name
                             version="1.0",
-                            title="Create a time series plot for the given models",
+                            title="Time Series Plot",
                             storeSupported="True",
                             statusSupported="True",
-                            abstract="Calls ESMValTool to create a time series plot.",
+                            abstract="Create a time series plot using ESMValTool (takes about 30 seconds).",
                             grassLocation=False)
 
-	model_names = ['None', 'ACCESS1-0', 'bcc-csm1-1', 'EC-EARTH', 'MIROC5']
+	model_names = ['None', 'ACCESS1-0', 'ACCESS1-3', 'bcc-csm1-1', 'EC-EARTH', 'MIROC5']
 
         self.model1 = self.addLiteralInput(identifier="model1",
                                                title="Model 1",
@@ -50,6 +50,7 @@ class Process(WPSProcess):
                                                abstract="Model name",
                                                minOccurs=1,
                                                maxOccurs=1,
+                                               default='ACCESS1-3',
                                                allowedValues=model_names)
         self.model3 = self.addLiteralInput(identifier="model3",
                                                title="Model 3",
@@ -114,7 +115,7 @@ class Process(WPSProcess):
                                                 type="String", )
 
 	self.plot = self.addComplexOutput(identifier = "plot",
-		     title = "TimeseriesPlot",
+		     title = "plot",
 		     formats = [
 			 {"mimeType":"image/png"}
 		     ])
